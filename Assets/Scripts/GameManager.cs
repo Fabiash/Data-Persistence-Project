@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 public class GameManager : MonoBehaviour
 {
@@ -15,7 +18,7 @@ public class GameManager : MonoBehaviour
     public Text BestScoreText;
 
     public Text ScoreText;
-    public GameObject GameOverText;
+    public GameObject GameOverScreen;
 
     private bool m_Started = false;
     public int m_Points;
@@ -29,6 +32,7 @@ public class GameManager : MonoBehaviour
         mainManager = GameObject.Find("Main Manager").GetComponent<MainManager>();
         bestScore = mainManager.bestScore;
         currentPlayerName = mainManager.playerName;
+        MainManager.Instance.LoadGame();
 
         if (mainManager.bestScoreSet)
         {
@@ -66,13 +70,6 @@ public class GameManager : MonoBehaviour
                 Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
             }
         }
-        else if (m_GameOver)
-        {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-            }
-        }
     }
 
     void AddPoint(int point)
@@ -91,12 +88,27 @@ public class GameManager : MonoBehaviour
 
     public void GameOver()
     {
-        
+
         if (bestScoreInThisGame)
         {
             mainManager.SetBestScore();
         }
         m_GameOver = true;
-        GameOverText.SetActive(true);
+        GameOverScreen.SetActive(true);
+        MainManager.Instance.SaveGame();
+    }
+
+    public void Restart()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void Quit()
+    {
+#if UNITY_EDITOR
+        EditorApplication.ExitPlaymode();
+#else
+        Application.Quit();
+#endif
     }
 }
